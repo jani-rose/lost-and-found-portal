@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages Inbox - Campus Finds{% endblock %}
+
+{% block content %}
+<div class="section-header" style="margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 2.2rem; font-weight: 800;"><i class="fa-solid fa-comments" style="color: var(--primary);"></i> Conversations</h1>
+        <p style="color: var(--text-secondary); margin-top: 0.25rem;">Coordinate direct returns and verify item details with other students.</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        <i class="fa-solid fa-gauge"></i> My Dashboard
+    </a>
+</div>
+
+<div class="inbox-layout">
+    <!-- Sidebar - Active Conversations list -->
+    <aside class="inbox-sidebar">
+        <div class="inbox-sidebar-header">
+            Active Chats
+        </div>
+        <ul class="conversation-list">
+            {% for conv in conversations %}
+                <li>
+                    <a href="{% url 'inbox_thread' conv.item.id conv.other_user.id %}" class="conversation-item-link">
+                        <div class="conversation-item {% if active_thread.item.id == conv.item.id and active_thread.other_user.id == conv.other_user.id %}active{% endif %}">
+                            <div class="conversation-item-header">
+                                <span class="conversation-user">
+                                    <i class="fa-solid fa-user" style="color: var(--text-muted); font-size: 0.8rem; margin-right: 0.35rem;"></i>
+                                    {{ conv.other_user.first_name }}
+                                </span>
+                                {% if conv.unread_count > 0 %}
+                                    <span class="unread-badge" style="margin-left: 0;">{{ conv.unread_count }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="conversation-item-title">
+                                <strong>Re:</strong> {{ conv.item.title }}
+                            </div>
+                            <div class="conversation-last-msg">
+                                {{ conv.last_message.content }}
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            {% empty %}
+                <li style="padding: 2.5rem 1.25rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fa-solid fa-comment-slash" style="font-size: 2rem; opacity: 0.4; margin-bottom: 0.75rem; display: block;"></i>
+                    No messages yet.
+                </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Main Pane - Chat History and Input -->
+    <section class="inbox-chat">
+        {% if active_thread %}
+            <div class="chat-header">
+                <div>
+                    <span class="chat-header-user">
+                        {{ active_thread.other_user.first_name }} ({{ active_thread.other_user.username }})
+                    </span>
+                    <div class="chat-header-item">
+                        Re: <strong><a href="{% url 'item_detail' active_thread.item.id %}" class="btn-link" style="font-size: 0.85rem;">{{ active_thread.item.title }}</a></strong> 
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">({{ active_thread.item.category }} at {{ active_thread.item.location }})</span>
+                    </div>
+                </div>
+                <span class="status-badge {% if active_thread.item.status == 'Open' %}open{% elif active_thread.item.status == 'Recovered' %}recovered{% elif active_thread.item.status == 'Given Away' %}given_away{% else %}closed{% endif %}" style="font-size: 0.75rem;">
+                    {{ active_thread.item.status }}
+                </span>
+            </div>
+
+            <div class="chat-messages" id="chat-messages-container">
+                {% for msg in history %}
+                    <div class="chat-bubble-container {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+                        <div class="chat-bubble">
+                            <div class="chat-content" style="word-break: break-word;">{{ msg.content }}</div>
+                            <span class="chat-time">{{ msg.created_at|date:"M d, g:i A" }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-footer">
+                <form method="POST" action="{% url 'inbox_thread' active_thread.item.id active_thread.other_user.id %}" class="chat-form">
+                    {% csrf_token %}
+                    <textarea name="content" placeholder="Type a message to {{ active_thread.other_user.first_name }}..." rows="2" required></textarea>
+                    <button type="submit" class="btn btn-primary" style="padding: 0 1.5rem; border-radius: var(--radius-sm);">
+                        <i class="fa-solid fa-paper-plane"></i> Reply
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); padding: 2rem; text-align: center;">
+                <i class="fa-solid fa-comments" style="font-size: 4rem; opacity: 0.2; margin-bottom: 1.5rem;"></i>
+                <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Select a Conversation</h3>
+                <p style="font-size: 0.95rem;">Choose a contact thread from the sidebar list to start coordinating return details.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<!-- Autoscroll to bottom script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var container = document.getElementById("chat-messages-container");
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

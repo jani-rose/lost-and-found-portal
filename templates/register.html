@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Registration - Campus Finds{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1 class="form-title">Student Registration</h1>
+    
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_username">Register Number</label>
+            {{ form.username }}
+            <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                Enter your unique college registration ID.
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="id_first_name">Student Name</label>
+            {{ form.first_name }}
+            <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                Enter your full name.
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="id_password">Password</label>
+            {{ form.password }}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            <i class="fa-solid fa-user-plus"></i> Register
+        </button>
+    </form>
+
+    <div class="form-footer">
+        Already registered? <a href="{% url 'login' %}" class="btn-link">Login Here</a>
+    </div>
+</div>
+{% endblock %}

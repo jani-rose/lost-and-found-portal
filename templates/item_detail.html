@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title }} - Item Detail{% endblock %}
+
+{% block content %}
+<div class="section-header" style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.2rem; font-weight: 800;">Report Details</h1>
+    <div style="display: flex; gap: 1rem;">
+        <a href="{% url 'all_reports' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Browse
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-gauge"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="detail-layout">
+    <!-- Left Pane - Image Container -->
+    <div class="detail-img-container">
+        {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="detail-img">
+        {% else %}
+            <div style="text-align: center;">
+                <i class="fa-solid fa-box-open" style="font-size: 6rem; color: var(--text-muted); opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
+                <span style="color: var(--text-muted); font-weight: 500;">No Image Provided</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Pane - Details Info -->
+    <div class="detail-info">
+        <div class="detail-header">
+            <div class="detail-badges">
+                <span class="type-badge {% if item.report_type == 'Lost' %}lost{% else %}found{% endif %}" style="position: static;">
+                    {{ item.report_type }}
+                </span>
+                <span class="status-badge {% if item.status == 'Open' %}open{% elif item.status == 'Recovered' %}recovered{% elif item.status == 'Given Away' %}given_away{% else %}closed{% endif %}" style="padding: 0.35rem 1rem;">
+                    Status: {{ item.status }}
+                </span>
+            </div>
+            <h2 class="detail-title">{{ item.title }}</h2>
+        </div>
+
+        <table class="detail-meta-table">
+            <tr>
+                <td class="label">Category</td>
+                <td><i class="fa-solid fa-tags" style="color: var(--primary); margin-right: 0.5rem;"></i> {{ item.category }}</td>
+            </tr>
+            <tr>
+                <td class="label">Location</td>
+                <td><i class="fa-solid fa-location-dot" style="color: var(--primary); margin-right: 0.5rem;"></i> {{ item.location }}</td>
+            </tr>
+            <tr>
+                <td class="label">Date Event</td>
+                <td><i class="fa-solid fa-calendar-days" style="color: var(--primary); margin-right: 0.5rem;"></i> {{ item.event_date }}</td>
+            </tr>
+            <tr>
+                <td class="label">Submission Date</td>
+                <td><i class="fa-solid fa-clock" style="color: var(--primary); margin-right: 0.5rem;"></i> {{ item.created_at }}</td>
+            </tr>
+        </table>
+
+        <div class="detail-description">
+            <h3>Description</h3>
+            <p style="color: var(--text-secondary); white-space: pre-wrap; font-size: 1rem; line-height: 1.6;">{{ item.description }}</p>
+        </div>
+
+        <!-- Reporter Contact Information -->
+        <div class="reporter-card">
+            <span class="reporter-label"><i class="fa-solid fa-user-shield"></i> Reporter Information</span>
+            <span class="reporter-name">{{ item.user.first_name }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Register Number: <strong>{{ item.user.username }}</strong></span>
+        </div>
+
+        <!-- Message Reporter section -->
+        {% if item.user != request.user %}
+            <div class="reporter-card" style="margin-top: 1.5rem; background-color: var(--bg-card); border: 1px solid var(--border);">
+                <span class="reporter-label" style="color: var(--primary);"><i class="fa-solid fa-envelope"></i> Send Message to Reporter</span>
+                
+                {% if request.GET.sent == 'success' %}
+                    <div style="background-color: var(--found-bg); color: var(--found-color); padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <i class="fa-solid fa-circle-check"></i> Message sent successfully!
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'send_message' item.id %}" style="margin-top: 0.75rem;">
+                    {% csrf_token %}
+                    <textarea name="content" placeholder="Ask about return details, coordinate handover, etc..." rows="3" class="form-control" style="font-size: 0.9rem;" required></textarea>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.5rem; font-size: 0.85rem; margin-top: 0.75rem;">
+                        <i class="fa-solid fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        <!-- Action item on status if logged in user is the owner -->
+        {% if item.user == request.user and item.status == 'Open' %}
+            <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1rem; display: flex; gap: 1rem;">
+                {% if item.report_type == 'Lost' %}
+                    <a href="{% url 'confirm_recovery' item.id %}" class="btn btn-success" style="flex: 1;">
+                        <i class="fa-solid fa-circle-check"></i> Mark as Recovered
+                    </a>
+                {% elif item.report_type == 'Found' %}
+                    <a href="{% url 'confirm_recovery' item.id %}" class="btn btn-success" style="flex: 1;">
+                        <i class="fa-solid fa-people-carry-box"></i> Mark as Given Away
+                    </a>
+                {% endif %}
+                <a href="{% url 'confirm_recovery' item.id %}" class="btn btn-secondary" style="flex: 1;">
+                    <i class="fa-solid fa-circle-xmark"></i> Close Report
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Similar Suggested Reports section -->
+<div style="margin-top: 4rem;">
+    <h2 style="font-size: 1.6rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> Similar Suggested Reports
+    </h2>
+    <div class="reports-grid">
+        {% for sug in suggestions %}
+            <div class="report-card">
+                <div class="card-img-wrapper">
+                    {% if sug.image %}
+                        <img src="{{ sug.image.url }}" alt="{{ sug.title }}" class="card-img">
+                    {% else %}
+                        <div class="card-img-placeholder">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                    {% endif %}
+                    <span class="type-badge {% if sug.report_type == 'Lost' %}lost{% else %}found{% endif %}">
+                        {{ sug.report_type }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <a href="{% url 'item_detail' sug.id %}" style="text-decoration: none; color: inherit; transition: var(--transition);" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='inherit'">
+                            {{ sug.title }}
+                        </a>
+                    </h3>
+                    <div class="card-meta">
+                        <div class="meta-item"><i class="fa-solid fa-location-dot"></i> <span>{{ sug.location }}</span></div>
+                        <div class="meta-item"><i class="fa-solid fa-calendar-days"></i> <span>{{ sug.event_date }}</span></div>
+                    </div>
+                    <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: 1rem;">
+                        <span class="status-badge open">{{ sug.status }}</span>
+                        <a href="{% url 'item_detail' sug.id %}" class="btn-link" style="font-size: 0.9rem;">
+                            View Details <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div style="grid-column: 1 / -1; padding: 3rem 2rem; background: white; border: 1px solid var(--border); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
+                <i class="fa-solid fa-circle-nodes" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                <p style="font-size: 0.95rem;">No matching opposite reports found in the category "{{ item.category }}".</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Status Update - Campus Finds{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 600px;">
+    <h1 class="form-title" style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">
+        <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Resolve Report
+    </h1>
+    
+    <p style="color: var(--text-muted); text-align: center; margin-bottom: 2rem; font-size: 0.95rem;">
+        Are you ready to resolve your report for: <strong>{{ item.title }}</strong>?
+    </p>
+
+    <!-- Item Overview Card -->
+    <div style="background-color: var(--muted-light); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">{{ item.title }}</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+            Report Type: <strong>{{ item.report_type }}</strong>
+        </p>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Category: <strong>{{ item.category }}</strong> | Location: <strong>{{ item.location }}</strong>
+        </p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {% if matches %}
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="matched_item" style="font-weight: 600;">Did you find this match in the portal?</label>
+                <select name="matched_item" id="matched_item" class="form-select" style="margin-top: 0.5rem;">
+                    <option value="">-- No Matching Report / Direct Handover --</option>
+                    {% for match in matches %}
+                        <option value="{{ match.id }}">
+                            {{ match.title }} (By: {{ match.user.first_name }} | At: {{ match.location }} on {{ match.event_date }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+                    Selecting a match will automatically mark that student's report as resolved as well!
+                </small>
+            </div>
+        {% else %}
+            <div style="background-color: var(--info-light); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: var(--radius-sm); padding: 1rem; color: var(--info); font-size: 0.9rem; margin-bottom: 2rem;">
+                <i class="fa-solid fa-circle-info"></i> No active matching opposite reports in the category <strong>"{{ item.category }}"</strong> were found to link.
+            </div>
+        {% endif %}
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button type="submit" name="action" value="resolve" class="btn btn-success" style="padding: 0.85rem;">
+                {% if item.report_type == 'Lost' %}
+                    <i class="fa-solid fa-circle-check"></i> Confirm Item Recovered
+                {% else %}
+                    <i class="fa-solid fa-people-carry-box"></i> Confirm Item Handed Over
+                {% endif %}
+            </button>
+            
+            <button type="submit" name="action" value="close" class="btn btn-secondary" style="padding: 0.85rem;">
+                <i class="fa-solid fa-circle-xmark"></i> Close Report Without Recovery Match
+            </button>
+            
+            <a href="{% url 'dashboard' %}" class="btn btn-link" style="text-align: center; margin-top: 0.5rem;">
+                Go Back
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

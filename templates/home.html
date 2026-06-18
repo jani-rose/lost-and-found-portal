@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Campus Finds{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">Recover What's Yours. Hand Over What's Lost.</h1>
+    <p class="hero-subtitle">
+        Campus Finds is the central hub for student reporting of lost items and handing over found personal belongings within the campus. Safe, transparent, and direct.
+    </p>
+    <div class="hero-actions">
+        <a href="{% url 'login' %}" class="btn btn-primary">
+            <i class="fa-solid fa-right-to-bracket"></i> Get Started
+        </a>
+        <a href="{% url 'register' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-user-plus"></i> Register
+        </a>
+    </div>
+</div>
+
+<h2 style="text-align: center; margin-bottom: 2rem; font-family: 'Outfit', sans-serif;">Portal Activity Overview</h2>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-title"><i class="fa-solid fa-folder-open" style="color: var(--primary);"></i> Total Reports</span>
+        <span class="stat-value">{{ stats.total }}</span>
+    </div>
+    <div class="stat-card lost-accent">
+        <span class="stat-title"><i class="fa-solid fa-circle-question" style="color: var(--lost-color);"></i> Lost Items</span>
+        <span class="stat-value">{{ stats.lost }}</span>
+    </div>
+    <div class="stat-card found-accent">
+        <span class="stat-title"><i class="fa-solid fa-hand-holding-heart" style="color: var(--found-color);"></i> Found Items</span>
+        <span class="stat-value">{{ stats.found }}</span>
+    </div>
+    <div class="stat-card recovered-accent">
+        <span class="stat-title"><i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Recovered</span>
+        <span class="stat-value">{{ stats.recovered }}</span>
+    </div>
+    <div class="stat-card given-accent">
+        <span class="stat-title"><i class="fa-solid fa-people-carry-box" style="color: var(--warning);"></i> Given Away</span>
+        <span class="stat-value">{{ stats.given_away }}</span>
+    </div>
+</div>
+{% endblock %}

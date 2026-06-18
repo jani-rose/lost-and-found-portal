@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Campus Lost & Found Portal - Easily report, search, and recover lost or found items on college campus.">
+    <title>{% block title %}Lost and Found Portal{% endblock %}</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom stylesheet -->
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}?v=1.5">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}" class="logo-link">
+                <i class="fa-solid fa-magnifying-glass-location logo-icon"></i>
+                <span class="logo-text">Campus Finds</span>
+            </a>
+            <nav>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-link">
+                        <i class="fa-solid fa-gauge"></i> Dashboard
+                    </a>
+                    <a href="{% url 'report_item' %}" class="nav-link">
+                        <i class="fa-solid fa-plus-circle"></i> Report Item
+                    </a>
+                    <a href="{% url 'dashboard' %}#my-reports" class="nav-link">
+                        <i class="fa-solid fa-user-tag"></i> My Reports
+                    </a>
+                    <a href="{% url 'all_reports' %}" class="nav-link">
+                        <i class="fa-solid fa-list-check"></i> All Reports
+                    </a>
+                    <a href="{% url 'inbox' %}" class="nav-link">
+                        <i class="fa-solid fa-envelope"></i> Inbox
+                        {% if unread_messages_count > 0 %}
+                            <span class="unread-badge">{{ unread_messages_count }}</span>
+                        {% endif %}
+                    </a>
+                    <div class="nav-user">
+                        <span class="user-badge">{{ user.first_name }}</span>
+                        <a href="{% url 'logout' %}" class="nav-link nav-btn btn" style="box-shadow: none;" title="Logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link">Login</a>
+                    <a href="{% url 'register' %}" class="nav-link btn btn-primary" style="padding: 0.5rem 1rem;">Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} Campus Finds (Lost & Found Portal). All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Campus Finds{% endblock %}
+
+{% block content %}
+<div class="section-header" style="margin-bottom: 3rem;">
+    <div>
+        <h1 style="font-size: 2.2rem; font-weight: 800;">Welcome, {{ request.user.first_name }}</h1>
+        <p style="color: var(--text-secondary); font-size: 1.05rem; margin-top: 0.25rem;">
+            <i class="fa-solid fa-id-card"></i> Register Number: <strong>{{ request.user.username }}</strong>
+        </p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <a href="{% url 'all_reports' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-list-ul"></i> Browse All Reports
+        </a>
+        <a href="{% url 'report_item' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus-circle"></i> Report New Item
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Grid -->
+<h2 style="margin-bottom: 1.5rem; font-size: 1.4rem;"><i class="fa-solid fa-chart-simple" style="color: var(--primary);"></i> Campus-Wide Statistics</h2>
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-title">Total Reports</span>
+        <span class="stat-value">{{ stats.total }}</span>
+    </div>
+    <div class="stat-card lost-accent">
+        <span class="stat-title">Lost Items</span>
+        <span class="stat-value">{{ stats.lost }}</span>
+    </div>
+    <div class="stat-card found-accent">
+        <span class="stat-title">Found Items</span>
+        <span class="stat-value">{{ stats.found }}</span>
+    </div>
+    <div class="stat-card recovered-accent">
+        <span class="stat-title">Recovered Items</span>
+        <span class="stat-value">{{ stats.recovered }}</span>
+    </div>
+    <div class="stat-card given-accent">
+        <span class="stat-title">Given Away Items</span>
+        <span class="stat-value">{{ stats.given_away }}</span>
+    </div>
+</div>
+
+<!-- User's My Reports Module -->
+<div class="section-header" style="margin-top: 4rem; margin-bottom: 1.5rem;">
+    <h2 id="my-reports" style="font-size: 1.6rem;"><i class="fa-solid fa-user-tag" style="color: var(--primary);"></i> My Submitted Reports</h2>
+</div>
+
+<div class="reports-grid">
+    {% for item in items %}
+        <div class="report-card">
+            <div class="card-img-wrapper">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="card-img">
+                {% else %}
+                    <div class="card-img-placeholder">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                {% endif %}
+                <span class="type-badge {% if item.report_type == 'Lost' %}lost{% else %}found{% endif %}">
+                    {{ item.report_type }}
+                </span>
+            </div>
+            
+            <div class="card-body">
+                <h3 class="card-title">
+                    <a href="{% url 'item_detail' item.id %}" style="text-decoration: none; color: inherit; transition: var(--transition);" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='inherit'">
+                        {{ item.title }}
+                    </a>
+                </h3>
+                
+                <div class="card-meta">
+                    <div class="meta-item" title="Category">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>{{ item.category }}</span>
+                    </div>
+                    <div class="meta-item" title="Location">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>{{ item.location }}</span>
+                    </div>
+                    <div class="meta-item" style="grid-column: span 2;" title="Event Date">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>{{ item.event_date }}</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                    {% if item.status == 'Open' %}
+                        {% if item.report_type == 'Lost' %}
+                            <a href="{% url 'confirm_recovery' item.id %}" class="btn btn-success" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                <i class="fa-solid fa-check"></i> Mark as Recovered
+                            </a>
+                        {% elif item.report_type == 'Found' %}
+                            <a href="{% url 'confirm_recovery' item.id %}" class="btn btn-success" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                <i class="fa-solid fa-people-carry-box"></i> Mark as Given Away
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'confirm_recovery' item.id %}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                            <i class="fa-solid fa-circle-xmark"></i> Close Report
+                        </a>
+                    {% else %}
+                        <span style="width: 100%; text-align: center; line-height: 2.2;" class="status-badge {% if item.status == 'Recovered' %}recovered{% elif item.status == 'Given Away' %}given_away{% else %}closed{% endif %}">
+                            {{ item.status }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <a href="{% url 'item_detail' item.id %}" class="btn-link" style="font-size: 0.9rem;">
+                    View Details <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border: 1px solid var(--border); border-radius: var(--radius-md);">
+            <i class="fa-solid fa-clipboard-question" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5; margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No reports submitted by you</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">If you have lost or found something, feel free to submit a report so fellow students can reach you.</p>
+            <a href="{% url 'report_item' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus-circle"></i> Create Your First Report
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
